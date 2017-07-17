@@ -14,7 +14,7 @@
 #define MAP_ROW_SIZE      4
 #define MAP_COL_SIZE      5
 
-#define ROUND_MAX         20
+#define ROUND_MAX         40
 
 #define BLACK             1
 #define WHITE             0

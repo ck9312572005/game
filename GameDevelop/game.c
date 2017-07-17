@@ -152,10 +152,10 @@ void DisplayRoundInfo(
     )
 {
     printf("==================================\n");
-    printf("Round:  (%hhu-%d)\n", gucRound, ROUND_MAX);
+    printf("Round:  (%u-%d)\n", gucRound, ROUND_MAX);
 
     if (HISTORY_UNDEFINED != grActHistory.ucRowIdx)
-        printf("Action: Row: %hhu, Col: %hhu\n", grActHistory.ucRowIdx + 1, grActHistory.ucColIdx + 1);
+        printf("Action: Row: %u, Col: %u\n", grActHistory.ucRowIdx + 1, grActHistory.ucColIdx + 1);
     else
         printf("\n");
 
@@ -214,19 +214,19 @@ void QueryAction(
     )
 {
     bool fgParamValid;
-    unsigned char *pucValue;
+    unsigned int *pu4Value;
 
     /* allocate dynamic memory for parameter temp buffer */
-    pucValue = malloc(sizeof(unsigned char));
+    pu4Value = malloc(sizeof(unsigned int));
 
     do
     {
         /* get Row Index parameter to temp buffer */
         printf("Please key in Row Index (1-%d):", MAP_ROW_SIZE);
-        scanf("%hhu", pucValue);
+        scanf("%u", pu4Value);
 
         /* assign temp buffer content to Row Index */
-        *pucRowIdx = *pucValue;
+        *pucRowIdx = (unsigned char)*pu4Value;
 
         /* sanity check for Row Index parameter */
         fgParamValid = IsRowIdxValid(*pucRowIdx, USER_COORDINATE);
@@ -240,10 +240,10 @@ void QueryAction(
     {
         /* get Column Index parameter */
         printf("Please key in Column Index (1-%d):", MAP_COL_SIZE);
-        scanf("%hhu", pucValue);
+        scanf("%u", pu4Value);
 
         /* assign temp buffer content to Column Index */
-        *pucColIdx = *pucValue;
+        *pucColIdx = (unsigned char)*pu4Value;
 
         /* sanity check for Column Index parameter*/
         fgParamValid = IsColIdxValid(*pucColIdx, USER_COORDINATE);
@@ -253,7 +253,7 @@ void QueryAction(
             printf("Your input is %u, which is invalid Column Index!!\n\n", *pucColIdx);
     } while (!fgParamValid);
 
-    printf("Your action is Row %hhu and Column %hhu.\n\n", *pucRowIdx, *pucColIdx);
+    printf("Your action is Row %u and Column %u.\n\n", *pucRowIdx, *pucColIdx);
 
     /* coordinate transformation for Row Index */
     *pucRowIdx -= 1;
@@ -262,7 +262,7 @@ void QueryAction(
     *pucColIdx -= 1;
 
     /* free dynamic allocated memory */
-    free(pucValue);
+    free(pu4Value);
 
 	return;
 }
@@ -298,8 +298,6 @@ int main(
     )
 {
 	unsigned char ucRowIdx, ucColIdx;
-	unsigned char ucRound = 0;
-    bool fgTimeOut = false;
 
     /* game rule explanation */
     DisplayGameExplan();
