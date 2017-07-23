@@ -1,7 +1,7 @@
 /*
  * game.c
  *
- * Copyright 2017 bruce2 <bruce2@bruce2-PORTEGE-R30-A>
+ * Copyright 2017 BY Huang <ck9312572005@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 /*                            EXTERNAL REFERENCE                               */
 /*******************************************************************************/
 #include "game.h"
+#include "utility.h"
 
 /*******************************************************************************/
 /*                              PRIVATE VARIABLE                               */
@@ -145,14 +146,30 @@ void ClearScreen(
 void DisplayGameExplan(
     )
 {
-    printf("Rule: Please make each unit to be \"O\"!!\n\n");
+    printf("Goal: Please make each unit to be \"O\"!!\n\n");
+    printf("Rule: Key in the coordination and the star range would be flipped!!\n\n");
+
+    printf("Example:\n");
+    printf("                Column       \n\n");
+    printf("        1    2    3    4    5\n\n");
+    printf("Row 1   O    O    O    O    O\n\n");
+    printf("Row 2   O    O    O    O    O\n\n");
+    printf("Row 3   O    O    O    O    O\n\n");
+    printf("Row 4   O    O    O    O    O\n\n\n\n");
+    printf("after key in Row 2 and column 3....\n\n");
+    printf("                Column       \n\n");
+    printf("        1    2    3    4    5\n\n");
+    printf("Row 1   O    O    X    O    O\n\n");
+    printf("Row 2   O    X    X    X    O\n\n");
+    printf("Row 3   O    O    X    O    O\n\n");
+    printf("Row 4   O    O    O    O    O\n\n");
 }
 
 void DisplayRoundInfo(
     )
 {
     printf("==================================\n");
-    printf("Round:  (%u-%d)\n", gucRound, ROUND_MAX);
+    printf("Round: %u,  Max Round: %d\n", gucRound, ROUND_MAX);
 
     if (HISTORY_UNDEFINED != grActHistory.ucRowIdx)
         printf("Action: Row: %u, Col: %u\n", grActHistory.ucRowIdx + 1, grActHistory.ucColIdx + 1);
@@ -195,7 +212,7 @@ void Display(
 	for (ucRowIdx = 0; ucRowIdx < MAP_ROW_SIZE; ucRowIdx++) {
 
         /* print Row Index coordination */
-        printf("Row %d   ", ucRowIdx+1);
+        printf("Row %d   ", ucRowIdx + 1);
 
 		for (ucColIdx = 0; ucColIdx < MAP_COL_SIZE; ucColIdx++) {
 			DisplayUnit(ucRowIdx, ucColIdx);
@@ -298,9 +315,23 @@ int main(
     )
 {
 	unsigned char ucRowIdx, ucColIdx;
+	char cstr[2];
+    bool fgIsReady;
 
     /* game rule explanation */
     DisplayGameExplan();
+
+    do
+    {
+        /* get Column Index parameter */
+        printf("Ready to play? (Enter \"P\")");
+
+        /* get user input to buffer */
+        sfgets(cstr, sizeof(char)*2, stdin, true);
+
+        /* sanity check for Ready flag */
+        fgIsReady = ((cstr[0] == 'P') && (cstr[1] == '\0'))? (true) : (false);
+    } while (!fgIsReady);
 
 	while (!IsGameFinish()) {
 
@@ -328,6 +359,9 @@ int main(
     }
 
     printf("You win the game!! Congratulations!!\n");
+
+    /* pause the screen */
+    system("pause");
 
 	return 0;
 

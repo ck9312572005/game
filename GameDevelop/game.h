@@ -62,7 +62,6 @@ typedef struct _ACTION
 /*******************************************************************************/
 /*                           FUNCTION DECLAIRATION                             */
 /*******************************************************************************/
-
 void SwitchState(
     unsigned char *pucMapUnit
     );
@@ -112,4 +111,4 @@ void Operation(
     unsigned char ucColIdx
     );
 
-#endif // GMAE_H_INCLUDED
+#endif /* GMAE_H_INCLUDED */
