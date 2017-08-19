@@ -4,9 +4,7 @@
 /*******************************************************************************/
 /*                            EXTERNAL REFERENCE                               */
 /*******************************************************************************/
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
+#include "define.h"
 
 /*******************************************************************************/
 /*                              CONSTANT DEFINE                                */
@@ -15,34 +13,35 @@
 /*******************************************************************************/
 /*                                 DATE TYPE                                   */
 /*******************************************************************************/
-typedef struct _NODE
+typedef struct _LIST
 {
     void *prStrct;
-    struct _NODE *next;
-} NODE, *P_NODE;
+    struct _LIST *next;
+} LIST, *P_LIST;
 
 /*******************************************************************************/
 /*                           FUNCTION DECLAIRATION                             */
 /*******************************************************************************/
 void InsertNode(
-    NODE* n1,
-    NODE* n2
+    LIST* n1,
+    LIST* n2
     );
 
 void RemoveNode(
-    NODE* n1
+    LIST* n1
     );
 
-NODE* CreateMode(
+LIST* CreateMode(
     void *prStrct
     );
 
 void PrintLists(
-    NODE* lists
+    LIST* n1,
+    unsigned short u2Length
     );
 
 void FreeLists(
-    NODE* lists
+    LIST* lists
     );
 
 #endif /* LINKLIST_H_INCLUDED */

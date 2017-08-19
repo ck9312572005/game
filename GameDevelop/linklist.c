@@ -24,6 +24,10 @@
 /*******************************************************************************/
 /*                            EXTERNAL REFERENCE                               */
 /*******************************************************************************/
+
+/*******************************************************************************/
+/*                            INTERNAL REFERENCE                               */
+/*******************************************************************************/
 #include "linklist.h"
 
 /*******************************************************************************/
@@ -35,8 +39,8 @@
 /*******************************************************************************/
 
 void InsertNode(
-    NODE* n1,
-    NODE* n2
+    LIST* n1,
+    LIST* n2
     )
 {
     /* Insert Node2 after Node1 */
@@ -45,19 +49,19 @@ void InsertNode(
 }
 
 void RemoveNode(
-    NODE* n1
+    LIST* n1
     )
 {
     /* Delete Node after Node1 */
     n1->next = n1->next->next;
 }
 
-NODE* CreateMode(
+LIST* CreateMode(
     void *prStrct
     )
 {
     /* Dynamic allocate memory */
-    NODE* n = (NODE*)malloc(sizeof(NODE));
+    LIST* n = (LIST*)malloc(sizeof(LIST));
 
     n->prStrct = prStrct;
     n->next = NULL;
@@ -66,17 +70,21 @@ NODE* CreateMode(
 }
 
 void PrintLists(
-    NODE* lists
+    LIST* n1,
+    unsigned short u2Length
     )
 {
-    NODE* n = lists;
+    LIST* n = n1;
+    unsigned char ucIndex;
 
     /* Prinf out all Node content sequentially */
     while (n != NULL)
     {
-        /* Need function pointer to replace printf */
-        printf("%p ", n->prStrct);
+        /* hex dump  */
+        for (ucIndex = 0; ucIndex <= u2Length; ucIndex++)
+            printf("%x ", ((char*)n->prStrct)[ucIndex]);
 
+        /* update pointer to next node */
         n = n->next;
     }
 
@@ -84,7 +92,7 @@ void PrintLists(
 }
 
 void FreeLists(
-    NODE* lists
+    LIST* lists
     )
 {
     /* Delete all Note recursively */

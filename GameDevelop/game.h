@@ -4,9 +4,7 @@
 /*******************************************************************************/
 /*                            EXTERNAL REFERENCE                               */
 /*******************************************************************************/
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
+#include "define.h"
 
 /*******************************************************************************/
 /*                              CONSTANT DEFINE                                */
@@ -59,6 +57,13 @@ typedef struct _ACTION
     unsigned char ucColIdx;
 } ACTION, *P_ACTION;
 
+typedef enum _ACTION_COORDINATE
+{
+    ACTION_COORDINATE_ROW = 0,
+    ACTION_COORDINATE_COL,
+    ACTION_COORDINATE_NUM
+} ACTION_COORDINATE, *P_ACTION_COORDINATE;
+
 /*******************************************************************************/
 /*                           FUNCTION DECLAIRATION                             */
 /*******************************************************************************/
@@ -101,9 +106,9 @@ void DisplayUnit(
 void Display(
     );
 
-void QueryAction(
-    unsigned char *pucRowIdx,
-    unsigned char *pucColIdx
+unsigned char QueryAction(
+    ACTION_COORDINATE eActCordin,
+    bool (*check)(unsigned char, bool)
     );
 
 void Operation(

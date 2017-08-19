@@ -24,19 +24,26 @@
 /*******************************************************************************/
 /*                            EXTERNAL REFERENCE                               */
 /*******************************************************************************/
-#include "game.h"
 #include "utility.h"
+#include "linklist.h"
+
+/*******************************************************************************/
+/*                            INTERNAL REFERENCE                               */
+/*******************************************************************************/
+#include "game.h"
 
 /*******************************************************************************/
 /*                              PRIVATE VARIABLE                               */
 /*******************************************************************************/
 
-ACTION grActHistory = {HISTORY_UNDEFINED, HISTORY_UNDEFINED};
-unsigned char gucRound = 0;
-unsigned char gucMap[MAP_ROW_SIZE][MAP_COL_SIZE] = {{BLACK,BLACK,BLACK,BLACK,BLACK},
-                                                    {BLACK,BLACK,BLACK,BLACK,BLACK},
-                                                    {WHITE,BLACK,WHITE,BLACK,WHITE},
-                                                    {BLACK,BLACK,BLACK,BLACK,BLACK}};
+static ACTION _rActHistory = {HISTORY_UNDEFINED, HISTORY_UNDEFINED};
+static unsigned char _ucRound = 0;
+static LIST* _pListBegin = NULL;
+static LIST* _pListEnd = NULL;
+static unsigned char _ucMap[MAP_ROW_SIZE][MAP_COL_SIZE] = {{BLACK,BLACK,BLACK,BLACK,BLACK},
+                                                           {BLACK,BLACK,BLACK,BLACK,BLACK},
+                                                           {WHITE,BLACK,WHITE,BLACK,WHITE},
+                                                           {BLACK,BLACK,BLACK,BLACK,BLACK}};
 
 /*******************************************************************************/
 /*                                  FUNCTION                                   */
@@ -101,7 +108,7 @@ bool IsGameFinish(
 
     for (ucRowIdx = 0; ucRowIdx < MAP_ROW_SIZE; ucRowIdx++) {
 		for (ucColIdx = 0; ucColIdx < MAP_COL_SIZE; ucColIdx++) {
-            if (BLACK == gucMap[ucRowIdx][ucColIdx])
+            if (BLACK == _ucMap[ucRowIdx][ucColIdx])
                 fgGameFinish = false;
 		}
     }
@@ -114,7 +121,7 @@ bool IsTimeOut(
 {
     bool fgTimeOut = false;
 
-    if (gucRound > ROUND_MAX)
+    if (_ucRound > ROUND_MAX)
         fgTimeOut = true;
 
     return fgTimeOut;
@@ -125,12 +132,36 @@ void SaveActHistory(
     unsigned char ucColIdx
     )
 {
-    /* update action history */
-    grActHistory.ucRowIdx = ucRowIdx;
-    grActHistory.ucColIdx = ucColIdx;
+    LIST* NextNode;
 
-    /* Round increment */
-    gucRound += 1;
+    /* allocate dynamic memory for action history */
+    ACTION* prActionHist = (ACTION*)malloc(sizeof(ACTION));
+
+    /* update action history */
+    prActionHist->ucRowIdx = ucRowIdx;
+    prActionHist->ucColIdx = ucColIdx;
+
+    /* create node */
+    NextNode = CreateMode(prActionHist);
+
+    /* first round check */
+    if(0 == _ucRound)
+    {
+        /* create first node and assign pointer to global variable */
+        _pListBegin = NextNode;
+        _pListEnd = NextNode;
+    }
+    else
+    {
+        /* insert new node */
+        InsertNode(_pListEnd, NextNode);
+
+        /* update last node to be node appended */
+        _pListEnd = NextNode;
+    }
+
+    /* round increment */
+    _ucRound += 1;
 }
 
 void ClearScreen(
@@ -169,10 +200,10 @@ void DisplayRoundInfo(
     )
 {
     printf("==================================\n");
-    printf("Round: %u,  Max Round: %d\n", gucRound, ROUND_MAX);
+    printf("Round: %u,  Max Round: %d\n", _ucRound, ROUND_MAX);
 
-    if (HISTORY_UNDEFINED != grActHistory.ucRowIdx)
-        printf("Action: Row: %u, Col: %u\n", grActHistory.ucRowIdx + 1, grActHistory.ucColIdx + 1);
+    if (HISTORY_UNDEFINED != _rActHistory.ucRowIdx)
+        printf("Action: Row: %u, Col: %u\n", _rActHistory.ucRowIdx + 1, _rActHistory.ucColIdx + 1);
     else
         printf("\n");
 
@@ -184,7 +215,7 @@ void DisplayUnit(
     unsigned char ucColIdx
     )
 {
-    switch (gucMap[ucRowIdx][ucColIdx]) {
+    switch (_ucMap[ucRowIdx][ucColIdx]) {
     case BLACK:
         printf("X    ");
         break;
@@ -225,63 +256,35 @@ void Display(
 	return;
 }
 
-void QueryAction(
-    unsigned char *pucRowIdx,
-    unsigned char *pucColIdx
+unsigned char QueryAction(
+    ACTION_COORDINATE eActCordin,
+    bool (*check)(unsigned char, bool)
     )
 {
     bool fgParamValid;
-    unsigned int *pu4Value;
-
-    /* allocate dynamic memory for parameter temp buffer */
-    pu4Value = malloc(sizeof(unsigned int));
+    unsigned char ucValue;
+    char cstr[3];
 
     do
     {
         /* get Row Index parameter to temp buffer */
-        printf("Please key in Row Index (1-%d):", MAP_ROW_SIZE);
-        scanf("%u", pu4Value);
+        printf("Please key in %s Index (1-%d):", (ACTION_COORDINATE_ROW == eActCordin)? ("Row") : ("Column"), MAP_ROW_SIZE);
+
+        /* get user input to buffer */
+        sfgets(cstr, sizeof(char)*3, stdin, true);
 
         /* assign temp buffer content to Row Index */
-        *pucRowIdx = (unsigned char)*pu4Value;
+        ucValue = (unsigned char)strtol(cstr, NULL, 10);
 
         /* sanity check for Row Index parameter */
-        fgParamValid = IsRowIdxValid(*pucRowIdx, USER_COORDINATE);
-        /* sanity fail log */
-
-        if (!fgParamValid)
-            printf("Your input is %u, which is invalid Row Index!!\n\n", *pucRowIdx);
-    } while (!fgParamValid);
-
-    do
-    {
-        /* get Column Index parameter */
-        printf("Please key in Column Index (1-%d):", MAP_COL_SIZE);
-        scanf("%u", pu4Value);
-
-        /* assign temp buffer content to Column Index */
-        *pucColIdx = (unsigned char)*pu4Value;
-
-        /* sanity check for Column Index parameter*/
-        fgParamValid = IsColIdxValid(*pucColIdx, USER_COORDINATE);
+        fgParamValid = check(ucValue, USER_COORDINATE);
 
         /* sanity fail log */
         if (!fgParamValid)
-            printf("Your input is %u, which is invalid Column Index!!\n\n", *pucColIdx);
+            printf("Your input is %u, which is invalid %s Index!!\n\n", ucValue, (ACTION_COORDINATE_ROW == eActCordin)? ("Row") : ("Column"));
     } while (!fgParamValid);
 
-    printf("Your action is Row %u and Column %u.\n\n", *pucRowIdx, *pucColIdx);
-
-    /* coordinate transformation for Row Index */
-    *pucRowIdx -= 1;
-
-    /* coordinate transformation for Column Index */
-    *pucColIdx -= 1;
-
-    /* free dynamic allocated memory */
-    free(pu4Value);
-
-	return;
+	return ucValue;
 }
 
 void Operation(
@@ -291,22 +294,22 @@ void Operation(
 {
     /* Up-Direction map unit state transition */
     if (IsRowIdxValid(ucRowIdx-1, SYS_COORDINATE))
-        SwitchState(&gucMap[ucRowIdx-1][ucColIdx]);
+        SwitchState(&_ucMap[ucRowIdx-1][ucColIdx]);
 
     /* Down-Direction map unit state transition */
     if (IsRowIdxValid(ucRowIdx+1, SYS_COORDINATE))
-        SwitchState(&gucMap[ucRowIdx+1][ucColIdx]);
+        SwitchState(&_ucMap[ucRowIdx+1][ucColIdx]);
 
     /* Left-Direction map unit state transition */
     if (IsColIdxValid(ucColIdx-1, SYS_COORDINATE))
-        SwitchState(&gucMap[ucRowIdx][ucColIdx-1]);
+        SwitchState(&_ucMap[ucRowIdx][ucColIdx-1]);
 
     /* Right-Direction map unit state transition */
     if (IsColIdxValid(ucColIdx+1, SYS_COORDINATE))
-        SwitchState(&gucMap[ucRowIdx][ucColIdx+1]);
+        SwitchState(&_ucMap[ucRowIdx][ucColIdx+1]);
 
     /* Self-position map unit state transition */
-    SwitchState(&gucMap[ucRowIdx][ucColIdx]);
+    SwitchState(&_ucMap[ucRowIdx][ucColIdx]);
 }
 
 int main(
@@ -333,6 +336,9 @@ int main(
         fgIsReady = ((cstr[0] == 'P') && (cstr[1] == '\0'))? (true) : (false);
     } while (!fgIsReady);
 
+    /* clear screen */
+    ClearScreen();
+
 	while (!IsGameFinish()) {
 
         /* Timeout Check */
@@ -343,10 +349,19 @@ int main(
         DisplayRoundInfo();
 
         /* Display to screen */
-        Display(gucMap);
+        Display(_ucMap);
 
         /* Player action query */
-        QueryAction(&ucRowIdx, &ucColIdx);
+        ucRowIdx = QueryAction(ACTION_COORDINATE_ROW, IsRowIdxValid);
+        ucColIdx = QueryAction(ACTION_COORDINATE_COL, IsColIdxValid);
+
+        printf("Your action is Row %u and Column %u.\n\n", ucRowIdx, ucColIdx);
+
+        /* coordinate transformation for Row Index */
+        ucRowIdx -= 1;
+
+        /* coordinate transformation for Column Index */
+        ucColIdx -= 1;
 
         /* save action to history list and Round Increment */
         SaveActHistory(ucRowIdx, ucColIdx);
